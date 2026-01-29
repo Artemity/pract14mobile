@@ -11,7 +11,7 @@
                    FontAttributes="Bold" 
                    HorizontalTextAlignment="Center"/>
 
-            <Frame BackgroundColor="#f8f9fa" 
+            <Frame BackgroundColor="Gray" 
                    Padding="15" 
                    CornerRadius="10">
                 <StackLayout Spacing="10">
