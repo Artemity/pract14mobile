@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="pract14mobile.Views.AddEditStockItemPage"
+            Title="Складская позиция">
+
+    <ScrollView>
+        <StackLayout Padding="20" Spacing="15">
+            <Label x:Name="lblTitle"
+                   FontSize="24" 
+                   FontAttributes="Bold" 
+                   HorizontalTextAlignment="Center"/>
+
+            <Frame BackgroundColor="#f8f9fa" 
+                   Padding="15" 
+                   CornerRadius="10">
+                <StackLayout Spacing="10">
+                    <!-- Выбор склада -->
+                    <Label Text="Склад:" FontSize="16" FontAttributes="Bold"/>
+                    <Picker x:Name="pickerWarehouse"
+                            Title="Выберите склад"
+                            ItemDisplayBinding="{Binding Address}"/>
+
+                    <!-- Выбор товара -->
+                    <Label Text="Товар:" FontSize="16" FontAttributes="Bold" Margin="0,10,0,0"/>
+                    <Picker x:Name="pickerProduct"
+                            Title="Выберите товар"
+                            ItemDisplayBinding="{Binding Name}"/>
+
+                    <!-- Количество -->
+                    <Label Text="Количество:" FontSize="16" FontAttributes="Bold" Margin="0,10,0,0"/>
+                    <Entry x:Name="entryQuantity"
+                           Placeholder="Введите количество"
+                           Keyboard="Numeric"
+                           Text="1"/>
+                </StackLayout>
+            </Frame>
+
+            <StackLayout Orientation="Horizontal" 
+                         HorizontalOptions="Center"
+                         Spacing="20"
+                         Margin="0,20">
+                <Button Text="💾 Сохранить" 
+                        Clicked="btnSave_Clicked" 
+                        WidthRequest="120"
+                        BackgroundColor="#2ecc71"
+                        TextColor="White"/>
+                <Button Text="❌ Отмена" 
+                        Clicked="btnCancel_Clicked" 
+                        WidthRequest="120"
+                        BackgroundColor="#95a5a6"
+                        TextColor="White"/>
+            </StackLayout>
+
+            <ActivityIndicator x:Name="loadingIndicator"
+                             IsRunning="False"
+                             IsVisible="False"
+                             Color="#3498db"
+                             HorizontalOptions="Center"/>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="pract14mobile.Views.MainPage"
+    Title="Продукты">
+
+    <StackLayout Padding="10">
+        <Label Text="Список продуктов" 
+               FontSize="20" 
+               FontAttributes="Bold" 
+               HorizontalTextAlignment="Center"
+               Margin="0,10"/>
+
+        <ListView x:Name="lvProducts" 
+                  HasUnevenRows="True" 
+                  SelectionMode="Single"
+                  ItemSelected="OnProductSelected">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <StackLayout Padding="15" 
+                                     BackgroundColor="#f5f5f5" 
+                                     Margin="5">
+                            <Label Text="{Binding Name}" 
+                                   FontSize="18" 
+                                   FontAttributes="Bold"
+                                   TextColor="#2c3e50"/>
+                            <StackLayout Orientation="Horizontal" 
+                                         Spacing="10">
+                                <Label Text="{Binding Category, StringFormat='Категория: {0}'}"
+                                       FontSize="14"
+                                       TextColor="#7f8c8d"/>
+                                <Label Text="{Binding Manufacturer, StringFormat='Производитель: {0}'}"
+                                       FontSize="14"
+                                       TextColor="#7f8c8d"/>
+                            </StackLayout>
+                        </StackLayout>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <StackLayout Orientation="Horizontal" 
+                     HorizontalOptions="Center"
+                     Spacing="20"
+                     Margin="0,20">
+            <Button Text="Добавить" 
+                    Clicked="btnAdd_Clicked" 
+                    WidthRequest="100"
+                    BackgroundColor="#27ae60"
+                    TextColor="White"/>
+            <Button Text="Редактировать" 
+                    Clicked="btnEdit_Clicked" 
+                    WidthRequest="100"
+                    BackgroundColor="#f39c12"
+                    TextColor="White"/>
+            <Button Text="Удалить" 
+                    Clicked="btnDelete_Clicked" 
+                    WidthRequest="100"
+                    BackgroundColor="#e74c3c"
+                    TextColor="White"/>
+        </StackLayout>
+    </StackLayout>
+</ContentPage>

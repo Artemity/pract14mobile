@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="pract14mobile.Views.AddEditProductPage"
+            Title="Продукт">
+
+    <StackLayout Padding="20" Spacing="15">
+        <Label Text="{Binding TitleText}" 
+               FontSize="24" 
+               FontAttributes="Bold" 
+               HorizontalTextAlignment="Center"/>
+
+        <Frame BackgroundColor="Grey" 
+               Padding="15" 
+               CornerRadius="10">
+            <StackLayout Spacing="10">
+                <Label Text="Название продукта:"/>
+                <Entry x:Name="entryName" 
+                       Placeholder="Введите название"
+                       Text="{Binding ProductName}"/>
+
+                <Label Text="Категория:"/>
+                <Entry x:Name="entryCategory" 
+                       Placeholder="Введите категорию"
+                       Text="{Binding Category}"/>
+
+                <Label Text="Производитель:"/>
+                <Entry x:Name="entryManufacturer" 
+                       Placeholder="Введите производителя"
+                       Text="{Binding Manufacturer}"/>
+            </StackLayout>
+        </Frame>
+
+        <StackLayout Orientation="Horizontal" 
+                     HorizontalOptions="Center"
+                     Spacing="20"
+                     Margin="0,20">
+            <Button Text="Сохранить" 
+                    Clicked="btnSave_Clicked" 
+                    WidthRequest="120"
+                    BackgroundColor="#2ecc71"
+                    TextColor="White"/>
+            <Button Text="Отмена" 
+                    Clicked="btnCancel_Clicked" 
+                    WidthRequest="120"
+                    BackgroundColor="#95a5a6"
+                    TextColor="White"/>
+        </StackLayout>
+    </StackLayout>
+</ContentPage>
