@@ -1,108 +1,116 @@
-﻿using System.Collections.ObjectModel;
-using pract14mobile.DTOs;
+﻿using pract14mobile.DTOs;
 using pract14mobile.Services;
+using System.Collections.ObjectModel;
 
 namespace pract14mobile.Views
 {
     public partial class MainPage : ContentPage
     {
-        private ObservableCollection<ProductDTO> _products;
-        private ProductDTO _selectedProduct;
+        private ObservableCollection<StockItemInfoDTO> _stockItems = new ObservableCollection<StockItemInfoDTO>();
 
         public MainPage()
         {
             InitializeComponent();
-            _products = new ObservableCollection<ProductDTO>();
-            lvProducts.ItemsSource = _products;
-            LoadProducts();
-        }
-
-        private void LoadProducts()
-        {
-            try
-            {
-                var products = APIService.Get<ProductDTO>("api/Products");
-                _products.Clear();
-                foreach (var product in products)
-                {
-                    _products.Add(product);
-                }
-            }
-
-
-            catch (Exception ex)
-            {
-                Device.BeginInvokeOnMainThread(async () =>
-                {
-                    await DisplayAlert("Ошибка", $"Не удалось загрузить продукты: {ex.Message}", "OK");
-                });
-            }
+            lvStockItems.ItemsSource = _stockItems;
         }
 
         protected override void OnAppearing()
         {
             base.OnAppearing();
-            LoadProducts();
+            LoadStockItems();
         }
 
-        private void OnProductSelected(object sender, SelectedItemChangedEventArgs e)
+        private void LoadStockItems()
         {
-            _selectedProduct = e.SelectedItem as ProductDTO;
-        }
-
-        private async void btnAdd_Clicked(object sender, EventArgs e)
-        {
-            lvProducts.SelectedItem = null;
-            _selectedProduct = null;
-            await Navigation.PushModalAsync(new AddEditProductPage());
-        }
-
-        private async void btnEdit_Clicked(object sender, EventArgs e)
-        {
-            if (_selectedProduct == null)
+            try
             {
-                await DisplayAlert("Ошибка", "Выберите продукт для редактирования", "OK");
+                var items = APIService.Get<List<StockItemInfoDTO>>("api/StockItems/Info");
+                if (items != null)
+                {
+                    _stockItems.Clear();
+                    foreach (var item in items)
+                    {
+                        _stockItems.Add(item);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DisplayAlert("Ошибка", $"Не удалось загрузить данные: {ex.Message}", "OK");
+            }
+        }
+
+        private async void btnAddStockItem_Clicked(object sender, EventArgs e)
+        {
+            await Navigation.PushAsync(new AddEditStockItemPage());
+        }
+
+        private async void btnEditStockItem_Clicked(object sender, EventArgs e)
+        {
+            var selected = lvStockItems.SelectedItem as StockItemInfoDTO;
+            if (selected == null)
+            {
+                await DisplayAlert("Ошибка", "Выберите позицию для редактирования", "OK");
                 return;
             }
 
-            Data.Product = _selectedProduct;
-            await Navigation.PushModalAsync(new AddEditProductPage());
+            try
+            {
+                var stockItem = APIService.Get<StockItemDTO>($"api/StockItems/{selected.Id}");
+                var editDTO = new StockItemEditDTO
+                {
+                    WarehouseId = stockItem.WarehouseId,
+                    ProductId = stockItem.ProductId,
+                    Quantity = stockItem.Quantity
+                };
+
+                await Navigation.PushAsync(new AddEditStockItemPage(editDTO, selected.Id));
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Ошибка", $"Не удалось загрузить запись: {ex.Message}", "OK");
+            }
         }
 
-        private async void btnDelete_Clicked(object sender, EventArgs e)
+        private async void btnDeleteStockItem_Clicked(object sender, EventArgs e)
         {
-            if (_selectedProduct == null)
+            var selected = lvStockItems.SelectedItem as StockItemInfoDTO;
+            if (selected == null)
             {
-                await DisplayAlert("Ошибка", "Выберите продукт для удаления", "OK");
+                await DisplayAlert("Ошибка", "Выберите позицию для удаления", "OK");
                 return;
             }
 
-            bool confirm = await DisplayAlert("Подтверждение",
-                $"Удалить продукт: {_selectedProduct.Name}?", "Да", "Нет");
-
+            var confirm = await DisplayAlert("Подтверждение", "Удалить позицию?", "Да", "Нет");
             if (confirm)
             {
                 try
                 {
-                    bool success = APIService.Delete("api/Products", _selectedProduct.Id);
+                    var success = APIService.Delete(selected.Id, "api/StockItems");
                     if (success)
                     {
-                        await DisplayAlert("Успех", "Продукт удален", "OK");
-                        // Сбрасываем выделение
-                        lvProducts.SelectedItem = null;
-                        _selectedProduct = null;
-                        LoadProducts();
+                        LoadStockItems();
                     }
                     else
                     {
-                        await DisplayAlert("Ошибка", "Не удалось удалить продукт", "OK");
+                        await DisplayAlert("Ошибка", "Не удалось удалить позицию", "OK");
                     }
                 }
                 catch (Exception ex)
                 {
-                    await DisplayAlert("Ошибка", $"Ошибка при удалении: {ex.Message}", "OK");
+                    await DisplayAlert("Ошибка", $"Не удалось удалить запись: {ex.Message}", "OK");
                 }
             }
+        }
+
+        private async void btnProducts_Clicked(object sender, EventArgs e)
+        {
+            await Navigation.PushAsync(new ProductsPage());
+        }
+
+        private async void btnWarehouses_Clicked(object sender, EventArgs e)
+        {
+            await Navigation.PushAsync(new WarehousesPage());
         }
     }
 }

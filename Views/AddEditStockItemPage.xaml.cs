@@ -1,85 +1,100 @@
-using System.Collections.ObjectModel;
-using pract14mobile.DTOs;
 using pract14mobile.Services;
+using pract14mobile.DTOs;
+using System.Collections.ObjectModel;
 
 namespace pract14mobile.Views
 {
     public partial class AddEditStockItemPage : ContentPage
     {
-        private ObservableCollection<WarehouseDTO> _warehouses = new();
-        private ObservableCollection<ProductDTO> _products = new();
-        private bool _isEditMode = false;
-        private int _currentId = 0;
+        private StockItemEditDTO _stockItem;
+        private int _stockItemId;
+        private ObservableCollection<WarehouseDTO> _warehouses;
+        private ObservableCollection<ProductDTO> _products;
 
-        public AddEditStockItemPage()
+        public AddEditStockItemPage(StockItemEditDTO existingItem = null, int id = 0)
         {
             InitializeComponent();
+
+            _warehouses = new ObservableCollection<WarehouseDTO>();
+            _products = new ObservableCollection<ProductDTO>();
 
             pickerWarehouse.ItemsSource = _warehouses;
             pickerProduct.ItemsSource = _products;
 
-            _isEditMode = Data.StockItem != null;
-            lblTitle.Text = _isEditMode ? "Редактировать позицию" : "Добавить позицию";
+            if (existingItem != null && id > 0)
+            {
+                _stockItem = existingItem;
+                _stockItemId = id;
+                Title = "Редактирование позиции";
+            }
+            else
+            {
+                _stockItem = new StockItemEditDTO();
+                Title = "Добавление позиции";
+            }
 
-            LoadData();
+            tvStockItem.BindingContext = _stockItem;
+
+            LoadWarehouses();
+            LoadProducts();
         }
 
-        private async void LoadData()
+        private async void LoadWarehouses()
         {
             try
             {
-                loadingIndicator.IsRunning = true;
-                loadingIndicator.IsVisible = true;
-
-                // Загружаем склады - FIX: исправляем тип возвращаемого значения
-                var warehouses = await APIService.GetListAsync<WarehouseDTO>("api/Warehouses");
-                _warehouses.Clear();
-                foreach (var w in warehouses)
-                    _warehouses.Add(w);
-
-                // Загружаем товары - FIX: исправляем тип возвращаемого значения
-                var products = await APIService.GetListAsync<ProductDTO>("api/Products");
-                _products.Clear();
-                foreach (var p in products)
-                    _products.Add(p);
-
-                // Если редактирование - заполняем поля
-                if (_isEditMode && Data.StockItem != null)
+                var warehouses = APIService.Get<List<WarehouseDTO>>("api/Warehouses");
+                if (warehouses != null)
                 {
-                    _currentId = Data.StockItem.Id;
+                    _warehouses.Clear();
+                    foreach (var warehouse in warehouses)
+                        _warehouses.Add(warehouse);
 
-                    var warehouse = _warehouses.FirstOrDefault(w =>
-                        w.Address == Data.StockItem.WarehouseAddress);
-                    if (warehouse != null)
-                        pickerWarehouse.SelectedItem = warehouse;
-
-                    var product = _products.FirstOrDefault(p =>
-                        p.Name == Data.StockItem.ProductName);
-                    if (product != null)
-                        pickerProduct.SelectedItem = product;
-
-                    entryQuantity.Text = Data.StockItem.Quantity.ToString();
-                }
-                else
-                {
-                    entryQuantity.Text = "1";
+                    if (_stockItem.WarehouseId > 0)
+                    {
+                        var warehouseToSelect = _warehouses.FirstOrDefault(w => w.Id == _stockItem.WarehouseId);
+                        if (warehouseToSelect != null)
+                        {
+                            pickerWarehouse.SelectedItem = warehouseToSelect;
+                        }
+                    }
                 }
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Ошибка", $"Не удалось загрузить данные: {ex.Message}", "OK");
-                await Navigation.PopModalAsync();
+                await DisplayAlert("Ошибка", $"Не удалось загрузить склады: {ex.Message}", "OK");
             }
-            finally
+        }
+
+        private async void LoadProducts()
+        {
+            try
             {
-                loadingIndicator.IsRunning = false;
-                loadingIndicator.IsVisible = false;
+                var products = APIService.Get<List<ProductDTO>>("api/Products");
+                if (products != null)
+                {
+                    _products.Clear();
+                    foreach (var product in products)
+                        _products.Add(product);
+
+                    if (_stockItem.ProductId > 0)
+                    {
+                        var productToSelect = _products.FirstOrDefault(p => p.Id == _stockItem.ProductId);
+                        if (productToSelect != null)
+                        {
+                            pickerProduct.SelectedItem = productToSelect;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Ошибка", $"Не удалось загрузить товары: {ex.Message}", "OK");
             }
         }
 
         private async void btnSave_Clicked(object sender, EventArgs e)
         {
-            // Валидация
             if (pickerWarehouse.SelectedItem == null)
             {
                 await DisplayAlert("Ошибка", "Выберите склад", "OK");
@@ -92,69 +107,41 @@ namespace pract14mobile.Views
                 return;
             }
 
-            if (!int.TryParse(entryQuantity.Text, out int quantity) || quantity < 1)
+            _stockItem.WarehouseId = ((WarehouseDTO)pickerWarehouse.SelectedItem).Id;
+            _stockItem.ProductId = ((ProductDTO)pickerProduct.SelectedItem).Id;
+
+            if (_stockItem.Quantity <= 0)
             {
-                await DisplayAlert("Ошибка", "Введите корректное количество (больше 0)", "OK");
+                await DisplayAlert("Ошибка", "Введите корректное количество", "OK");
                 return;
             }
 
             try
             {
-                loadingIndicator.IsRunning = true;
-                loadingIndicator.IsVisible = true;
-
-                var warehouse = (WarehouseDTO)pickerWarehouse.SelectedItem;
-                var product = (ProductDTO)pickerProduct.SelectedItem;
-
-                var stockItem = new StockItemDTO
+                if (_stockItemId == 0)
                 {
-                    WarehouseId = warehouse.Id,
-                    ProductId = product.Id,
-                    Quantity = quantity
-                };
-
-                bool success;
-
-                if (_isEditMode)
-                {
-                    stockItem.Id = _currentId;
-                    // Используем правильный метод
-                    success = await APIService.PutAsync(stockItem, _currentId, "api/StockItems");
+                    var result = APIService.Post(_stockItem, "api/StockItems");
+                    await DisplayAlert("Успех", "Позиция добавлена", "OK");
                 }
                 else
                 {
-                    // Используем правильный метод
-                    success = await APIService.PostAsync(stockItem, "api/StockItems");
+                    var success = APIService.Put(_stockItem, _stockItemId, "api/StockItems");
+                    if (success)
+                    {
+                        await DisplayAlert("Успех", "Позиция обновлена", "OK");
+                    }
+                    else
+                    {
+                        await DisplayAlert("Ошибка", "Не удалось обновить позицию", "OK");
+                    }
                 }
 
-                if (success)
-                {
-                    await DisplayAlert("Успех",
-                        _isEditMode ? "Данные обновлены" : "Позиция добавлена",
-                        "OK");
-                    Data.StockItem = null;
-                    await Navigation.PopModalAsync();
-                }
-                else
-                {
-                    await DisplayAlert("Ошибка", "Не удалось сохранить данные", "OK");
-                }
+                await Navigation.PopAsync();
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Ошибка", $"Ошибка сохранения: {ex.Message}", "OK");
+                await DisplayAlert("Ошибка", $"Не удалось сохранить: {ex.Message}", "OK");
             }
-            finally
-            {
-                loadingIndicator.IsRunning = false;
-                loadingIndicator.IsVisible = false;
-            }
-        }
-
-        private async void btnCancel_Clicked(object sender, EventArgs e)
-        {
-            Data.StockItem = null;
-            await Navigation.PopModalAsync();
         }
     }
 }

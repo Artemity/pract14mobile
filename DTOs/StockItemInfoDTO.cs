@@ -13,7 +13,6 @@ namespace pract14mobile.DTOs
         public string WarehouseAddress { get; set; }
         public string ProductName { get; set; }
         public string ProductCategory { get; set; }
-        public string Manufacturer { get; set; }
         public int Quantity { get; set; }
     }
 }

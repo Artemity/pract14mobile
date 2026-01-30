@@ -10,7 +10,15 @@ namespace pract14mobile.DTOs
     {
         public int Id { get; set; }
         public string Address { get; set; }
-        public string Phone { get; set; }
+        public int? Phone { get; set; }
         public string ManagerLastName { get; set; }
+
+        public bool IsValid()
+        {
+            return !string.IsNullOrWhiteSpace(Address) &&
+                   Phone.HasValue &&
+                   Phone > 0 &&
+                   !string.IsNullOrWhiteSpace(ManagerLastName);
+        }
     }
 }

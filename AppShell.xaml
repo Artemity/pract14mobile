@@ -9,14 +9,16 @@
 
     <TabBar>
         <ShellContent Title="🏠 Главная"
-                      Icon="home.png"
-                      ContentTemplate="{DataTemplate views:StockItemsPage}"
-                      Route="StockItemsPage" />
-
-        <ShellContent Title="📦 Товары"
-                      Icon="products.png"
                       ContentTemplate="{DataTemplate views:MainPage}"
                       Route="MainPage" />
+
+        <ShellContent Title="📦 Товары"
+                      ContentTemplate="{DataTemplate views:ProductsPage}"
+                      Route="ProductsPage" />
+
+        <ShellContent Title="🏢 Склады"
+                      ContentTemplate="{DataTemplate views:WarehousesPage}"
+                      Route="WarehousesPage" />
     </TabBar>
 
 </Shell>

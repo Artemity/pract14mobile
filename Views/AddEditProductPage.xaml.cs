@@ -1,128 +1,60 @@
 using pract14mobile.DTOs;
 using pract14mobile.Services;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 
-namespace pract14mobile.Views;
-
-public partial class AddEditProductPage : ContentPage, INotifyPropertyChanged
+namespace pract14mobile.Views
 {
-    private bool isEditMode = false;
-    private ProductDTO currentProduct;
-
-    private string _productName;
-    private string _category;
-    private string _manufacturer;
-
-    public string TitleText => isEditMode ? "Редактировать продукт" : "Добавить новый продукт";
-
-    public string ProductName
+    public partial class AddEditProductPage : ContentPage
     {
-        get => _productName;
-        set
+        private ProductDTO _product;
+
+        public AddEditProductPage(ProductDTO existingProduct = null)
         {
-            if (_productName != value)
+            InitializeComponent();
+
+            if (existingProduct != null)
             {
-                _productName = value;
-                OnPropertyChanged();
-            }
-        }
-    }
-
-    public string Category
-    {
-        get => _category;
-        set
-        {
-            if (_category != value)
-            {
-                _category = value;
-                OnPropertyChanged();
-            }
-        }
-    }
-
-    public string Manufacturer
-    {
-        get => _manufacturer;
-        set
-        {
-            if (_manufacturer != value)
-            {
-                _manufacturer = value;
-                OnPropertyChanged();
-            }
-        }
-    }
-
-    public AddEditProductPage()
-    {
-        InitializeComponent();
-        BindingContext = this;
-
-        if (Data.Product != null)
-        {
-            isEditMode = true;
-            currentProduct = Data.Product;
-
-            // Устанавливаем значения через свойства с уведомлением
-            ProductName = currentProduct.Name;
-            Category = currentProduct.Category;
-            Manufacturer = currentProduct.Manufacturer;
-        }
-        else
-        {
-            isEditMode = false;
-        }
-    }
-
-    private async void btnSave_Clicked(object sender, EventArgs e)
-    {
-        if (string.IsNullOrWhiteSpace(entryName.Text))
-        {
-            await DisplayAlert("Ошибка", "Введите название продукта", "OK");
-            return;
-        }
-
-        try
-        {
-            var product = new ProductDTO
-            {
-                Name = entryName.Text,
-                Category = entryCategory.Text,
-                Manufacturer = entryManufacturer.Text
-            };
-
-            if (isEditMode)
-            {
-                product.Id = currentProduct.Id;
-                await APIService.Put(product, product.Id, "api/products");
-                await DisplayAlert("Успешно", "Продукт обновлен", "OK");
+                _product = existingProduct;
+                Title = "Редактировать товар";
             }
             else
             {
-                await APIService.Post(product, "api/products");
-                await DisplayAlert("Успешно", "Продукт добавлен", "OK");
+                _product = new ProductDTO();
+                Title = "Добавить товар";
             }
 
-            await Navigation.PopModalAsync();
+            tvProduct.BindingContext = _product;
         }
-        catch (Exception ex)
+
+        private async void btnSave_Clicked(object sender, EventArgs e)
         {
-            await DisplayAlert("Ошибка", $"Не удалось сохранить продукт: {ex.Message}", "OK");
+            if (string.IsNullOrWhiteSpace(_product.Name))
+            {
+                await DisplayAlert("Ошибка", "Введите название товара", "OK");
+                return;
+            }
+
+            try
+            {
+                if (_product.Id == 0)
+                {
+                    var result = APIService.Post(_product, "api/Products");
+                    await DisplayAlert("Успех", "Товар добавлен", "OK");
+                }
+                else
+                {
+                    var success = APIService.Put(_product, _product.Id, "api/Products");
+                    if (success)
+                    {
+                        await DisplayAlert("Успех", "Товар обновлен", "OK");
+                    }
+                }
+
+                await Navigation.PopAsync();
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Ошибка", $"Не удалось сохранить: {ex.Message}", "OK");
+            }
         }
-    }
-
-    private async void btnCancel_Clicked(object sender, EventArgs e)
-    {
-        await Navigation.PopModalAsync();
-    }
-
-    // Реализация INotifyPropertyChanged
-    public new event PropertyChangedEventHandler PropertyChanged;
-
-    protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="pract14mobile.Views.ProductsPage"
+             Title="Товары">
+
+    <StackLayout>
+        <Label Text="Список товаров" FontSize="20" HorizontalTextAlignment="Center"/>
+        <ListView x:Name="lvProducts" HasUnevenRows="True">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <StackLayout Padding="10">
+                            <Label Text="{Binding Name}" 
+                                   FontAttributes="Bold" 
+                                   HorizontalOptions="Center"/>
+                            <Label Text="{Binding Category, StringFormat='Категория: {0}'}" 
+                                   HorizontalOptions="Center"/>
+                            <Label Text="{Binding Manufacturer, StringFormat='Производитель: {0}'}" 
+                                   HorizontalOptions="Center"/>
+                        </StackLayout>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <Button Text="Добавить товар" x:Name="btnAdd" Clicked="btnAdd_Clicked" Margin="10,10"/>
+        <Button Text="Редактировать товар" x:Name="btnEdit" Clicked="btnEdit_Clicked" Margin="10,10"/>
+        <Button Text="Удалить товар" x:Name="btnDelete" Clicked="btnDelete_Clicked" Margin="10,10"/>
+    </StackLayout>
+</ContentPage>

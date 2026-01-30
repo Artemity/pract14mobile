@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="pract14mobile.Views.AddEditWarehousePage"
+             Title="Склад">
+
+    <ScrollView>
+        <StackLayout Padding="20">
+            <TableView x:Name="tvWarehouse">
+                <TableRoot>
+                    <TableSection Title="Информация о складе">
+                        <EntryCell Label="Адрес" 
+                                   Text="{Binding Address}" 
+                                   Placeholder="Введите адрес склада"/>
+
+                        <EntryCell Label="Телефон" 
+                                   Text="{Binding Phone}" 
+                                   Placeholder="Введите телефон"
+                                   Keyboard="Telephone"/>
+
+                        <EntryCell Label="Фамилия менеджера" 
+                                   Text="{Binding ManagerLastName}" 
+                                   Placeholder="Введите фамилию менеджера"/>
+                    </TableSection>
+                </TableRoot>
+            </TableView>
+
+            <Button Text="Сохранить" 
+                    x:Name="btnSave" 
+                    Clicked="btnSave_Clicked" 
+                    Margin="10,20,10,10"/>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>
